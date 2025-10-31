@@ -49,10 +49,18 @@ void PacketParser::parseAllPackets() {
         PacketInfo info;
         info.index = m_packetIndex;
 
+        info.isTruncated = (header->caplen < header->len);  // 捕获长度 < 实际长度表示被截断
+
+
         // 1. 解析时间戳（秒.微秒）
         QDateTime time = QDateTime::fromSecsSinceEpoch(header->ts.tv_sec);
         time = time.addMSecs(header->ts.tv_usec / 1000);  // 转换微秒到毫秒
         info.timestamp = time.toString("yyyy-MM-dd hh:mm:ss.zzz");
+
+        // 解析时间戳（秒.微秒）并转换为UTC时间
+        QDateTime timeutc = QDateTime::fromSecsSinceEpoch(header->ts.tv_sec, Qt::UTC);
+        timeutc = timeutc.addMSecs(header->ts.tv_usec / 1000);  // 转换微秒到毫秒
+        info.timestamputc = timeutc.toString("yyyy-MM-dd hh:mm:ss.zzz");
 
         // 2. 解析以太网层（MAC地址）
         ether_header *eth = (ether_header *)packet;
@@ -142,6 +150,12 @@ void PacketParser::parseAllPackets() {
         } else {
             info.protocol = QString("以太网（类型：0x%1）").arg(ntohs(eth->h_proto), 4, 16, QChar('0')).toUpper();
             info.info = "非IP协议数据包";
+        }
+
+        // 在详细信息中添加截断提示
+        if (info.isTruncated) {
+            info.detail.prepend(QString("警告：数据包被截断（实际长度：%1，捕获长度：%2）\n")
+                                .arg(header->len).arg(header->caplen));
         }
 
         emit packetParsed(info);  // 发送解析结果到UI

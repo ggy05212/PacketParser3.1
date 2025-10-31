@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
             m_packetWidget, &PacketWidget::appendPacket);
     // 关联菜单和解析完成信号
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::onActionOpenFile);
-//    connect(m_pcapHandler, &PacketParser::parseFinished, this, &MainWindow::onParseFinished);
 }
 
 MainWindow::~MainWindow() {
@@ -42,8 +41,3 @@ void MainWindow::onActionOpenFile() {
         QMessageBox::critical(this, "错误", "无法打开PCAP文件！");
     }
 }
-
-//void MainWindow::onParseFinished() {
-//    QMessageBox::information(this, "完成",
-//        QString("解析完成，共 %1 个数据包").arg(m_packetWidget->findChild<QTableWidget*>()->rowCount()));
-//}

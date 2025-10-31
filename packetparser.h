@@ -13,7 +13,7 @@ typedef struct ether_header {
     u_short h_proto;      // 上层协议类型
 } ether_header;
 
-// IP包头部结构定义（Windows兼容版）
+// IP包头部结构定义
 typedef struct ip_header {
     u_char  version_ihl;  // 版本号(4位) + 头部长度(4位)
     u_char  tos;          // 服务类型
@@ -27,7 +27,7 @@ typedef struct ip_header {
     u_char  daddr[4];     // 目的IP地址
 } ip_header;
 
-// TCP段头部结构定义（Windows兼容版）
+// TCP段头部结构定义
 typedef struct tcp_header {
     u_short src_port;     // 源端口
     u_short dest_port;    // 目的端口
@@ -40,7 +40,7 @@ typedef struct tcp_header {
     u_short urgent_ptr;   // 紧急指针
 } tcp_header;
 
-// UDP段头部结构定义（Windows兼容版）
+// UDP段头部结构定义
 typedef struct udp_header {
     u_short src_port;     // 源端口
     u_short dest_port;    // 目的端口
@@ -60,7 +60,9 @@ typedef struct udp_header {
 
 // 存储数据包基本信息
 struct PacketInfo {
+    bool isTruncated;        //判断是否被截断
     int index;               // 序号
+    QString timestamputc;    //utc时间戳
     QString timestamp;       // 时间戳
     QString srcMac;          // 源MAC
     QString dstMac;          // 目的MAC
@@ -75,7 +77,7 @@ struct PacketInfo {
 class PacketParser : public QObject {
     Q_OBJECT
 public:
-     ~PacketParser();
+    ~PacketParser();
     explicit PacketParser(QObject *parent = nullptr);
     bool openFile(const QString &filePath);  // 打开pcap文件
     void closeFile();                        // 关闭文件

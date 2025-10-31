@@ -1,7 +1,6 @@
 #include "packetwidget.h"
 #include "ui_packetwidget.h"
 #include <QTableWidgetItem>
-
 PacketWidget::PacketWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::PacketWidget) {
@@ -58,9 +57,12 @@ void PacketWidget::buildDetailTree(const PacketInfo &info) {
     // 基本信息节点
     QTreeWidgetItem *baseItem = new QTreeWidgetItem({"基本信息"});
     baseItem->addChild(new QTreeWidgetItem({"序号", QString::number(info.index)}));
-    baseItem->addChild(new QTreeWidgetItem({"时间戳", info.timestamp}));
+   baseItem->addChild(new QTreeWidgetItem({"Arrival Time(UTC)", info.timestamputc}));
+    baseItem->addChild(new QTreeWidgetItem({"Arrival Time(CTS)", info.timestamp}));
     baseItem->addChild(new QTreeWidgetItem({"总长度", QString::number(info.length)}));
     ui->detailTree->addTopLevelItem(baseItem);
+
+
 
     // 以太网层节点
     QTreeWidgetItem *ethItem = new QTreeWidgetItem({"以太网层"});
