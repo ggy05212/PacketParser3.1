@@ -19,10 +19,16 @@
      <item>
       <widget class="QTableWidget" name="tableWidget"/>
      </item>
-     <item>
-      <widget class="QTextEdit" name="detailText"/>
-     </item>
     </layout>
+   </item>
+   <item row="1" column="0">
+    <widget class="QTreeWidget" name="detailTree">
+     <column>
+      <property name="text">
+       <string notr="true">1</string>
+      </property>
+     </column>
+    </widget>
    </item>
   </layout>
  </widget>

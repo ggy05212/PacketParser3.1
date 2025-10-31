@@ -7,7 +7,7 @@ PacketWidget::PacketWidget(QWidget *parent) :
     ui(new Ui::PacketWidget) {
     ui->setupUi(this);
 
-    // 初始化表格（与之前的表格结构一致）
+    // 初始化表格
     ui->tableWidget->setColumnCount(6);
     ui->tableWidget->setHorizontalHeaderLabels(
     {"序号", "时间戳", "源地址", "目的地址", "协议", "信息"});
@@ -17,25 +17,29 @@ PacketWidget::PacketWidget(QWidget *parent) :
             onTableItemClicked(item->row(), item->column());
         }
     });
-    ui->detailText->setReadOnly(true);
+
+    // 初始化树状结构
+    ui->detailTree->setHeaderLabel("数据包详细信息");
+    ui->detailTree->setColumnCount(2);
+    ui->detailTree->setHeaderLabels({"字段", "值"});
 }
 
 PacketWidget::~PacketWidget() {
     delete ui;
 }
-//清理detail表格
+
 void PacketWidget::cleardetail() {
     ui->tableWidget->setRowCount(0);
-    m_packetList.clear(); // 清空存储的数据包列表
-    ui->detailText->clear(); // 清空详细信息
+    m_packetList.clear();
+    ui->detailTree->clear(); // 清空树状结构
 }
 
 void PacketWidget::clear() {
-    ui->tableWidget->setRowCount(0); // 清空表格
+    ui->tableWidget->setRowCount(0);
 }
 
 void PacketWidget::appendPacket(const PacketInfo &data) {
-    // 添加数据包到表格
+    // 表格添加逻辑不变
     int row = ui->tableWidget->rowCount();
     ui->tableWidget->insertRow(row);
     ui->tableWidget->setItem(row, 0, new QTableWidgetItem(QString::number(data.index)));
@@ -44,17 +48,43 @@ void PacketWidget::appendPacket(const PacketInfo &data) {
     ui->tableWidget->setItem(row, 3, new QTableWidgetItem(data.dstIp.isEmpty() ? data.dstMac : data.dstIp));
     ui->tableWidget->setItem(row, 4, new QTableWidgetItem(data.protocol));
     ui->tableWidget->setItem(row, 5, new QTableWidgetItem(data.info));
-    // 存储数据包到列表，用于后续点击查询
     m_packetList.append(data);
 }
 
-// 处理表格点击事件，显示对应数据包的详细信息
+// 构建树状结构
+void PacketWidget::buildDetailTree(const PacketInfo &info) {
+    ui->detailTree->clear();
+
+    // 基本信息节点
+    QTreeWidgetItem *baseItem = new QTreeWidgetItem({"基本信息"});
+    baseItem->addChild(new QTreeWidgetItem({"序号", QString::number(info.index)}));
+    baseItem->addChild(new QTreeWidgetItem({"时间戳", info.timestamp}));
+    baseItem->addChild(new QTreeWidgetItem({"总长度", QString::number(info.length)}));
+    ui->detailTree->addTopLevelItem(baseItem);
+
+    // 以太网层节点
+    QTreeWidgetItem *ethItem = new QTreeWidgetItem({"以太网层"});
+    ethItem->addChild(new QTreeWidgetItem({"源MAC", info.srcMac}));
+    ethItem->addChild(new QTreeWidgetItem({"目的MAC", info.dstMac}));
+    ui->detailTree->addTopLevelItem(ethItem);
+
+    // IP层节点（如果有IP信息）
+    if (!info.srcIp.isEmpty()) {
+        QTreeWidgetItem *ipItem = new QTreeWidgetItem({"IP层"});
+        ipItem->addChild(new QTreeWidgetItem({"源IP", info.srcIp}));
+        ipItem->addChild(new QTreeWidgetItem({"目的IP", info.dstIp}));
+        ipItem->addChild(new QTreeWidgetItem({"协议", info.protocol}));
+        ui->detailTree->addTopLevelItem(ipItem);
+    }
+
+    // 展开所有节点
+    ui->detailTree->expandAll();
+}
+
 void PacketWidget::onTableItemClicked(int row, int column) {
     Q_UNUSED(column);
     if (row >= 0 && row < m_packetList.size()) {
-        // 获取当前行对应的数据包信息
         const PacketInfo &info = m_packetList[row];
-        // 在detailTextEdit中显示详细信息
-        ui->detailText->setText(info.detail);
+        buildDetailTree(info); // 显示树状结构
     }
 }
